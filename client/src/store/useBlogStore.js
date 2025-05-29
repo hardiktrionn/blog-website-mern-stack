@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axiosInstance from "../instance/axiosInstance";
 import toast from "react-hot-toast";
+import errorSeperate from "../utils/errorSeperate";
 
 const useBlogStore = create((set) => ({
   blogs: [],
@@ -27,6 +28,9 @@ const useBlogStore = create((set) => ({
     try {
       const res = await axiosInstance.get("/blog/user");
       set({ blogs: res.data.blogs, loading: false });
+      set((state) => ({
+        allBlogs: [...state.allBlogs, ...res.data.blogs],
+      }));
 
       return true;
     } catch (error) {
@@ -40,19 +44,28 @@ const useBlogStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const res = await axiosInstance.post("/blog/create", formData);
-      set((state) => ({
-        blogs: [...state.blogs, res.data.blog],
-        loading: false,
-      }));
-      toast.success("Blog created successfully");
-      return true;
+      if (res.data.success) {
+        set((state) => ({
+          blogs: [...state.blogs, res.data.blog],
+          allBlogs: [...state.allBlogs, res.data.blog],
+          loading: false,
+        }));
+        toast.success("Blog created successfully");
+        return false;
+      } else {
+        toast.success(res?.data?.message);
+        return true;
+      }
     } catch (error) {
       set({
         loading: false,
       });
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Failed to create blog");
-      return false;
+
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
     }
   },
   deleteBlog: async (id, role) => {
@@ -98,20 +111,29 @@ const useBlogStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const res = await axiosInstance.put(`/blog/update/${id}`, formData);
-      set((state) => ({
-        blogs: state.blogs.map((blog) =>
-          blog._id === id ? res.data.blog : blog
-        ),
-        loading: false,
-      }));
-      toast.success("Blog updated successfully");
-      return true;
+
+      if (res.data.success) {
+        set((state) => ({
+          blogs: state.blogs.map((blog) =>
+            blog._id === id ? res.data.blog : blog
+          ),
+          loading: false,
+        }));
+        toast.success("Blog updated successfully");
+        return false;
+      } else {
+        toast.error(res.data.message);
+        return true;
+      }
     } catch (error) {
       set({
         loading: false,
       });
-      toast.error(error?.response?.data?.message || "Failed to update blog");
-      return false;
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
     }
   },
 }));

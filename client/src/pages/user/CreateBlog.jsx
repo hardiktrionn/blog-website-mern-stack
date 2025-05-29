@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Editor } from "primereact/editor";
 import toast from "react-hot-toast";
 import useBlogStore from "../../store/useBlogStore";
+import Inputbox from "../../components/Inputbox";
+import Selectbox from "../../components/Selectbox";
+import allCategories from "../../utils/allCategories";
+import Button from "../../components/Button";
 
 const CreateBlog = () => {
   const [title, setTitle] = useState("");
@@ -9,20 +13,12 @@ const CreateBlog = () => {
   const [banner, setBanner] = useState("");
   const [category, setCategory] = useState("");
   const [privacy, setPrivacy] = useState("public");
+  const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const { createBlog } = useBlogStore();
-  const allCategories = [
-    "Technology",
-    "Lifestyle",
-    "Health & Wellness",
-    "Personal Development",
-    "Finance",
-    "Fashion & Beauty",
-    "Food & Recipes",
-    "Travel",
-    "Business & Entrepreneurship",
-  ];
 
   const handlePublich = async () => {
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("title", title);
     formData.append("category", category);
@@ -31,13 +27,15 @@ const CreateBlog = () => {
     formData.append("privacy", privacy);
 
     let res = await createBlog(formData);
-
-    if (res) {
+    setIsLoading(false);
+    if (!res) {
       setTitle("");
       setCategory("");
       setDescription("");
       setBanner("");
       setPrivacy("public");
+    } else {
+      setError(res);
     }
   };
 
@@ -48,9 +46,9 @@ const CreateBlog = () => {
           Create a New Blog
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <label htmlFor="banner" className="overflow-hidden cursor-pointer">
-            <div className="w-full h-[50vh] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center my-5">
+            <div className="w-full h-[50vh] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center my-3">
               {!banner && <p>Upload Banner Image</p>}
               <input
                 type="file"
@@ -67,46 +65,26 @@ const CreateBlog = () => {
                 />
               )}
             </div>
+            {error?.file && <p className={"text-red-500 mt-1"}>{error.file}</p>}
           </label>
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Title
-            </label>
-            <input
-              id="title"
-              type="title"
-              className="input"
-              placeholder="Blog Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Privacy
-            </label>
-            <select
-              className="input"
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="" disabled>
-                Choose Category
-              </option>
-              {allCategories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
+
+          <Inputbox
+            label={"Title *"}
+            type={"text"}
+            placeholder={"Blog title"}
+            value={title}
+            setValue={setTitle}
+            error={error?.title}
+          />
+
+          <Selectbox
+            label={"Category"}
+            value={category}
+            setValue={setCategory}
+            options={allCategories}
+            error={error?.category}
+          />
+
           <div>
             <label
               htmlFor="title"
@@ -118,33 +96,30 @@ const CreateBlog = () => {
               value={description}
               onTextChange={(e) => setDescription(e.htmlValue)}
               style={{ height: "320px" }}
+              className={`border-2 rounded-xl overflow-hidden ${
+                error?.description ? " border-red-500" : " border-black"
+              }`}
             />
+            {<p className="text-red-500 mt-1">{error?.description}</p>}
           </div>
-          <div>
-            <label
-              htmlFor="privacy"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Privacy
-            </label>
-            <select
-              className="input"
-              id="privacy"
-              value={privacy}
-              onChange={(e) => setPrivacy(e.target.value)}
-            >
-              <option defaultChecked value={"public"}>
-                Public
-              </option>
-              <option value={"private"}>Private</option>
-            </select>
-          </div>
-          <button
+
+          <Selectbox
+            label={"Privacy"}
+            value={privacy}
+            setValue={setPrivacy}
+            options={[
+              { label: "Public", checked: true, value: "public" },
+              { label: "Private", checked: false, value: "private" },
+            ]}
+            error={error?.privacy}
+          />
+
+          <Button
             onClick={handlePublich}
-            className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-          >
-            Publish
-          </button>
+            loading={isLoading}
+            label={"Publish"}
+            loadinglabel={"Loading"}
+          />
         </div>
       </div>
     </div>

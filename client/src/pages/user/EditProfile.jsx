@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useAuthStore from "../../store/useAuthStore";
-import { FaRegUserCircle } from "react-icons/fa";
+import Inputbox from "../../components/Inputbox";
+import Button from "../../components/Button";
 
 const EditProfile = () => {
   const [email, setEmail] = useState("");
@@ -8,6 +9,8 @@ const EditProfile = () => {
   const [picture, setPicture] = useState("");
   const [newPicture, setNewPicture] = useState("");
   const [username, setUsername] = useState("");
+  const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const { updateProfile } = useAuthStore();
   const { user } = useAuthStore();
 
@@ -18,7 +21,8 @@ const EditProfile = () => {
     setUsername(user?.username);
   }, [user]);
 
-  const handleUpdateProfile = () => {
+  const handleUpdateProfile = async () => {
+    setIsLoading(true);
     let formData = new FormData();
 
     formData.append("name", name);
@@ -27,7 +31,13 @@ const EditProfile = () => {
     if (newPicture) {
       formData.append("file", newPicture);
     }
-    updateProfile(formData);
+    let res = await updateProfile(formData);
+    setIsLoading(false);
+    if (res) {
+      setError(res);
+    } else {
+      setError({});
+    }
   };
 
   return (
@@ -37,7 +47,7 @@ const EditProfile = () => {
           Update Profile
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center justify-center mb-4">
             <label
               htmlFor="picture"
@@ -47,12 +57,16 @@ const EditProfile = () => {
                 <img
                   src={URL.createObjectURL(newPicture)}
                   alt="New Profile"
-                  className="w-28 h-20 object-cover rounded-md"
+                  className="w-24 h-24 object-cover rounded-full"
                 />
               ) : (
                 <img
-                  className="w-28 h-20"
-                  src={`${import.meta.env.VITE_API_URL}/uploads/${picture}`}
+                  className="w-24 h-24 object-cover rounded-full"
+                  src={
+                    picture
+                      ? `${import.meta.env.VITE_API_URL}/uploads/${picture}`
+                      : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                  }
                   alt={`${name}'s profile picture
                 }`}
                 />
@@ -64,64 +78,42 @@ const EditProfile = () => {
                 accept="image/*"
                 onChange={(e) => setNewPicture(e.target.files[0])}
               />
-              {picture ? picture.name : "Upload Profile Picture"}
             </label>
           </div>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="input"
-              placeholder="Your Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Username
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="input"
-              placeholder="Your Username"
-              value={username}
-              readOnly
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="your@email.com"
-              value={email}
-              readOnly
-            />
-          </div>
+          <Inputbox
+            label={"Name *"}
+            type={"text"}
+            placeholder={"Your Name"}
+            value={name}
+            setValue={setName}
+            error={error?.name}
+          />
+          <Inputbox
+            label={"Username *"}
+            type={"text"}
+            placeholder={"Your Username"}
+            value={username}
+            readOnly={true}
+            setValue={setUsername}
+            error={error?.username}
+          />
+          <Inputbox
+            label={"Email *"}
+            type={"email"}
+            placeholder={"Your@gmail.com"}
+            value={email}
+            readOnly={true}
+            setValue={setEmail}
+            error={error?.email}
+          />
 
-          <button
+          <Button
             onClick={handleUpdateProfile}
-            className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-          >
-            Update Profile
-          </button>
+            loading={isLoading}
+            label={"Update Profile"}
+            loadinglabel={"Loading"}
+          />
+         
         </div>
       </div>
     </div>

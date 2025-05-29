@@ -14,7 +14,7 @@ const Navbar = () => {
   const onSearch = (e) => {
     if (e.key == "Enter") {
       if (search.length) {
-        navigate(`/blog?search=${search}`);
+        navigate(`/?search=${search}`);
         setSearch("");
       }
     }
@@ -42,7 +42,7 @@ const Navbar = () => {
           />
           <button
             onClick={() => {
-              if (search.length) navigate(`/blog?search=${search}`);
+              if (search.length) navigate(`/?search=${search}`);
               setSearch("");
             }}
             className="text-white absolute end-2.5 bottom-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-3"
@@ -53,13 +53,13 @@ const Navbar = () => {
       </div>
 
       <div className="absolute right-16 flex space-x-4">
-        <Link to={"/CreateBlog"} className="btn-center">
+        <Link to={"/create-blog"} className="btn-center">
           <FaRegEdit size={23} />
         </Link>
         {/* <button className="btn-center">
           <IoNotificationsSharp size={23} />
         </button> */}
-        <Link to={"/Profile"} className="btn-center">
+        <Link to={"/profile"} className="btn-center">
           {user?.picture ? (
             <img
               src={`${import.meta.env.VITE_API_URL}/uploads/${user.picture}`}

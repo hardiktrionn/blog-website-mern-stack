@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import { FaLock } from "react-icons/fa";
 import BackButton from "../../components/BackButton";
 import ErrorPage from "./components/ErrorPage";
+import Inputbox from "../../components/Inputbox";
+import errorSeperate from "../../utils/errorSeperate";
+import Button from "../../components/Button";
 
 const Edituser = () => {
   const { username } = useParams();
@@ -15,6 +18,7 @@ const Edituser = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [newPicture, setNewPicture] = useState("");
+  const [error, setError] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -24,13 +28,13 @@ const Edituser = () => {
     try {
       setIsLoading(true);
       let res = await axiosInstance.get(`/auth/seen/${username}`);
+      setIsLoading(false);
       if (res.data.success) {
         setData(res.data.user);
         setName(res.data.user.name);
         setEmail(res.data.user.email);
-        setIsLoading(false);
       } else {
-        setIsLoading(false);
+        
         setData("");
         toast.error(res.data.message);
       }
@@ -46,6 +50,7 @@ const Edituser = () => {
 
     formData.append("name", name);
     formData.append("email", email);
+    formData.append("username", username);
     if (newPicture) {
       formData.append("file", newPicture);
     }
@@ -63,10 +68,10 @@ const Edituser = () => {
       }
     } catch (error) {
       fetchData();
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred during profile update"
-      );
+      if (error.response) {
+        let res = errorSeperate(error);
+        setError(res);
+      }
     }
   };
   return (
@@ -136,7 +141,7 @@ const Edituser = () => {
             )}
           </div>
           <div className="w-[35%] px-10 py-10 overflow-hidden space-y-4 text-lg text-gray-700 font-semibold">
-            <div className="space-y-4">
+            <div className="space-y-2">
               <div className="flex items-center justify-center mb-4">
                 <label
                   htmlFor="picture"
@@ -154,8 +159,7 @@ const Edituser = () => {
                       src={`${import.meta.env.VITE_API_URL}/uploads/${
                         data?.picture
                       }`}
-                      alt={`${name}'s profile picture
-                }`}
+                      alt={`picture`}
                     />
                   )}
                   <input
@@ -168,61 +172,38 @@ const Edituser = () => {
                   {data?.picture?.name || "Upload Profile Picture"}
                 </label>
               </div>
-              <div>
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Username
-                </label>
-                <input
-                  id="username"
-                  type="text"
-                  className="input"
-                  placeholder="Your UserName Name"
-                  value={username}
-                  readOnly
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  className="input"
-                  placeholder="Your Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  className="input"
-                  placeholder="your@email.com"
-                  value={email}
-                  readOnly
-                />
-              </div>
+              <Inputbox
+                label={"Name *"}
+                type={"text"}
+                placeholder={"Your Name"}
+                value={name}
+                setValue={setName}
+                error={error?.name}
+              />
+              <Inputbox
+                label={"Username *"}
+                type={"text"}
+                placeholder={"Your Username"}
+                value={username}
+                readOnly={true}
+                error={error?.username}
+              />
+              <Inputbox
+                label={"Email *"}
+                type={"email"}
+                placeholder={"Your@gmail.com"}
+                value={email}
+                readOnly={true}
+                setValue={setEmail}
+                error={error?.email}
+              />
 
-              <button
+              <Button
                 onClick={handleUpdateProfile}
-                className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-              >
-                Update Profile
-              </button>
+                loading={isLoading}
+                label={"Update Profile"}
+                loadinglabel={"Updating"}
+              />
             </div>
           </div>
         </div>

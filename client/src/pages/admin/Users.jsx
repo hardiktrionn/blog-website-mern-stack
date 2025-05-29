@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useDashBoardStore from "../../store/useDashBoardStore";
 import axiosInstance from "../../instance/axiosInstance";
 import { FaRegEdit } from "react-icons/fa";
@@ -7,19 +7,51 @@ import getTimeAgo from "../../utils/getTimeAgo";
 import { toast } from "react-hot-toast";
 import useBlogStore from "../../store/useBlogStore";
 import { Link } from "react-router-dom";
+import useDeletemodelStore from "../../store/useDeletemodelStore";
+import Model from "../../components/Model";
+import SearchInput from "../../components/SearchInput";
 
 const Users = () => {
-  const { setCurrentPage, currentPage, users, setUsers ,fetchUsers} = useDashBoardStore();
+  const { setCurrentPage, currentPage, users, setUsers, fetchUsers } =
+    useDashBoardStore();
   const { allBlogs, setAllBlogs } = useBlogStore();
+  const [search, setSearch] = useState("");
+  const [data, setData] = useState([]);
+  const { openDeleteModal, itemToDelete, isDeleteModalOpen, closeDeleteModal } =
+    useDeletemodelStore();
 
   useEffect(() => {
     if (currentPage !== "users") {
       setCurrentPage("users");
     }
-    fetchUsers();
+    const loadBlogs = async () => {
+      await fetchUsers();
+      setData(users);
+    };
+    loadBlogs();
   }, []);
 
-  
+  useEffect(() => {
+    const time = setTimeout(() => {
+      filterData();
+    }, 300);
+
+    return () => {
+      clearTimeout(time);
+    };
+  }, [search]);
+
+  const filterData = () => {
+    let res = users.filter(
+      (a) =>
+        a?.name?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+        a?.email?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+        a?.username?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+        a?.blogs?.length == search
+    );
+
+    setData(res);
+  };
 
   const deleteUser = async (id) => {
     try {
@@ -39,32 +71,31 @@ const Users = () => {
       toast.error(error.response?.data?.message || "Some Error Occure");
     }
   };
+
   return (
     <div>
+      <div className="w-[30%] py-2">
+        <SearchInput value={search} setValue={setSearch} />
+      </div>
       <table className=" bg-white w-full rounded-md border border-gray-200">
         <thead className="bg-gray-200 ">
           <tr className="rounded-2xl">
-            <th className="p-4 text-left text-[13px] font-semibold text-slate-900">
-              Name
-            </th>
-            <th className="p-4 text-left text-[13px] font-semibold text-slate-900">
-              Email
-            </th>
-            <th className="p-4 text-left text-[13px] font-semibold text-slate-900">
-              UserName
-            </th>
-            <th className="p-4 text-left text-[13px] font-semibold text-slate-900">
-              Joined At
-            </th>
-            <th className="p-4 text-left text-[13px] font-semibold text-slate-900">
-              Actions
-            </th>
+            {["Name", "Email", "Username", "Blogs", "Joined At", "Actions"].map(
+              (item, i) => (
+                <th
+                  key={i}
+                  className="p-4 text-left text-[13px] font-medium text-slate-700"
+                >
+                  {item}
+                </th>
+              )
+            )}
           </tr>
         </thead>
 
         <tbody className="whitespace-nowrap w-full">
-          {users.length !== 0 ? (
-            users.map((item, i) => (
+          {data.length !== 0 ? (
+            data.map((item, i) => (
               <tr key={i} className="hover:bg-gray-50">
                 <td className="p-4 text-[15px] text-slate-900 font-medium">
                   {item?.name}
@@ -74,6 +105,9 @@ const Users = () => {
                 </td>
                 <td className="p-4 text-[15px] text-slate-600 font-medium">
                   {item?.username}
+                </td>
+                <td className="p-4 text-[15px] text-slate-600 font-medium">
+                  {item?.blogs.length}
                 </td>
                 <td className="p-4 text-[15px] text-slate-600 font-medium">
                   {getTimeAgo(item?.createdAt)}
@@ -88,7 +122,7 @@ const Users = () => {
                       <FaRegEdit size={24} className="text-blue-500" />
                     </Link>
                     <button
-                      onClick={() => deleteUser(item?._id)}
+                      onClick={() => openDeleteModal(item?._id)}
                       title="Delete"
                       className="cursor-pointer"
                     >
@@ -108,6 +142,14 @@ const Users = () => {
           )}
         </tbody>
       </table>
+      {isDeleteModalOpen && itemToDelete && (
+        <Model
+          onDelete={() => {
+            deleteUser(itemToDelete, "admin");
+            closeDeleteModal();
+          }}
+        />
+      )}
     </div>
   );
 };

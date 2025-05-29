@@ -13,16 +13,15 @@ const Dashboard = () => {
   useEffect(() => {
     if (currentPage !== "dashboard") {
       setCurrentPage("dashboard");
-
-      fetchUsers();
-      fetchAllBlogs();
     }
+    fetchUsers();
+    fetchAllBlogs();
   }, []);
 
   return (
     <section className="w-[80%] mx-20 my-4 grid grid-cols-3 gap-5">
       <Link
-        to="/Admin/users"
+        to="/admin/users"
         className="w-full flex items-center bg-white border shadow shadow-gray-500 border-gray-400 rounded-md px-6 py-3"
       >
         <div className="w-[40%]">
@@ -34,7 +33,7 @@ const Dashboard = () => {
         </div>
       </Link>
       <Link
-        to="/Admin/blogs"
+        to="/admin/blogs"
         className="w-full flex items-center bg-white border shadow shadow-gray-500 border-gray-400 rounded-md px-6 py-3"
       >
         <div className="w-[40%]">

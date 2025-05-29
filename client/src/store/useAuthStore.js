@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import axiosInstance from "../instance/axiosInstance";
 import { toast } from "react-hot-toast";
+import errorSeperate from "../utils/errorSeperate";
 
 const useAuthStore = create((set, get) => ({
   user: null,
@@ -10,17 +11,19 @@ const useAuthStore = create((set, get) => ({
     try {
       let res = await axiosInstance.post("/auth/login", userData);
       if (res.data.success) {
+        toast.success("Login successful");
         set({ user: res.data.user, isAuthenticated: true });
-        return true;
+        return false;
       } else {
         toast.error(res.data.message || "Login failed");
-        return false;
+        return true;
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "An error occurred during login"
-      );
-      return false;
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
     }
   },
   registerUser: async (userData) => {
@@ -29,16 +32,18 @@ const useAuthStore = create((set, get) => ({
       if (res.data.success) {
         set({ user: res.data.user, isAuthenticated: true });
         toast.success("Registration successful");
-        return true;
+        return false;
       } else {
         toast.error(res.data.message || "Registration failed");
-        return false;
+        return true;
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "An error occurred during registration"
-      );
-      return false;
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+
+      return true;
     }
   },
   checkAuth: async () => {
@@ -82,17 +87,53 @@ const useAuthStore = create((set, get) => ({
       if (res.data.success) {
         set({ user: res.data.user });
         toast.success("Profile updated successfully");
-        return true;
+        return false;
       } else {
         toast.error(res.data.message || "Profile update failed");
-        return false;
+        return true;
       }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred during profile update"
-      );
-      return false;
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
+    }
+  },
+  changePassword: async (data) => {
+    try {
+      let res = await axiosInstance.put("/auth/update-password", data);
+      if (res.data.success) {
+        toast.success("Password updated successfully");
+        return false;
+      } else {
+        toast.error(res.data.message || "Password update failed");
+        return true;
+      }
+    } catch (error) {
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
+    }
+  },
+  newPassword: async (data) => {
+    try {
+      let res = await axiosInstance.post("/auth/new-password", data);
+      if (res.data.success) {
+        toast.success("Password updated successfully");
+        return false;
+      } else {
+        toast.error(res.data.message || "Password update failed");
+        return true;
+      }
+    } catch (error) {
+      if (error.response) {
+        let err = errorSeperate(error);
+        return err;
+      }
+      return true;
     }
   },
 }));

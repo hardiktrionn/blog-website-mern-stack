@@ -1,25 +1,59 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useDashBoardStore from "../../store/useDashBoardStore";
 import useBlogStore from "../../store/useBlogStore";
 import getTimeAgo from "../../utils/getTimeAgo";
 import { FaRegEdit } from "react-icons/fa";
 import { BiTrash } from "react-icons/bi";
 import { Link } from "react-router-dom";
+import useDeletemodelStore from "../../store/useDeletemodelStore";
+import Model from "../../components/Model";
+import SearchInput from "../../components/SearchInput";
 
 const Blogs = () => {
   const { setCurrentPage, currentPage } = useDashBoardStore();
   const { allBlogs, deleteBlog, fetchAllBlogs } = useBlogStore();
+  const [data, setData] = useState([]);
+  const [search, setSearch] = useState("");
+  const { openDeleteModal, itemToDelete, isDeleteModalOpen, closeDeleteModal } =
+    useDeletemodelStore();
 
   useEffect(() => {
     if (currentPage !== "blogs") {
       setCurrentPage("blogs");
-
-      fetchAllBlogs();
     }
+    const loadBlogs = async () => {
+      await fetchAllBlogs();
+      setData(allBlogs);
+    };
+    loadBlogs();
   }, []);
+
+  useEffect(() => {
+    const time = setTimeout(() => {
+      filterData();
+    }, 300);
+
+    return () => {
+      clearTimeout(time);
+    };
+  }, [search]);
+
+  const filterData = () => {
+    let res = allBlogs.filter(
+      (a) =>
+        a?.title?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+        a?.category?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+        a?.username?.toLowerCase().includes(search.toLocaleLowerCase())
+    );
+
+    setData(res);
+  };
 
   return (
     <div className="">
+      <div className="w-[30%] py-2">
+        <SearchInput value={search} setValue={setSearch} />
+      </div>
       <table className=" bg-white w-full rounded-md border border-gray-200">
         <thead className="bg-gray-200 ">
           <tr className="rounded-2xl">
@@ -42,8 +76,8 @@ const Blogs = () => {
         </thead>
 
         <tbody className="whitespace-nowrap">
-          {allBlogs.length != 0 ? (
-            allBlogs.map((item, i) => (
+          {data.length != 0 ? (
+            data.map((item, i) => (
               <tr key={i} className="hover:bg-gray-50">
                 <td className="p-4 text-[15px] text-slate-900 font-medium">
                   {item?.title}
@@ -67,7 +101,7 @@ const Blogs = () => {
                       <FaRegEdit size={24} className="text-blue-500" />
                     </Link>
                     <button
-                      onClick={() => deleteBlog(item?._id, "admin")}
+                      onClick={() => openDeleteModal(item?._id, "admin")}
                       title="Delete"
                       className="cursor-pointer"
                     >
@@ -84,6 +118,14 @@ const Blogs = () => {
           )}
         </tbody>
       </table>
+      {isDeleteModalOpen && itemToDelete && (
+        <Model
+          onDelete={() => {
+            deleteBlog(itemToDelete, "admin");
+            closeDeleteModal();
+          }}
+        />
+      )}
     </div>
   );
 };

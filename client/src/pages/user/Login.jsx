@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore";
 import { useCookies } from "react-cookie";
+import Inputbox from "../../components/Inputbox";
+import Button from "../../components/Button";
 
 const Login = () => {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const { loginUser } = useAuthStore();
+  const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
   const [cookies, setCookies, removeCookies] = useCookies("token");
 
   useEffect(() => {
@@ -17,10 +21,14 @@ const Login = () => {
   }, []);
 
   const handleLogin = async () => {
+    setIsLoading(true);
     let res = await loginUser({ email, password, role: "user" });
-    if (res) {
+    setIsLoading(false);
+    if (!res) {
       navigate("/");
     }
+
+    setError(res);
   };
 
   return (
@@ -31,57 +39,43 @@ const Login = () => {
         </h2>
 
         <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          <Inputbox
+            label={"Email *"}
+            type={"email"}
+            placeholder={"Your@gmail.com"}
+            value={email}
+            setValue={setEmail}
+            error={error?.email}
+          />
+          <Inputbox
+            label={"Password *"}
+            type={"password"}
+            placeholder={"••••••••"}
+            value={password}
+            setValue={setPassword}
+            error={error?.password}
+          />
           <div className="flex items-center justify-end">
-            <a href="#" className="text-sm text-black hover:text-black">
+            <Link
+              to={"/forget-password"}
+              className="text-sm text-black hover:text-black"
+            >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
-          <button
-            onClick={() => handleLogin({ email, password })}
-            className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-          >
-            Login
-          </button>
+          <Button
+            onClick={handleLogin}
+            loading={isLoading}
+            label={"Login"}
+            loadinglabel={"Loading"}
+          />
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Don't have an account?
           <Link
-            to={"/Register"}
+            to={"/register"}
             className="text-black hover:text-black font-medium"
           >
             Register

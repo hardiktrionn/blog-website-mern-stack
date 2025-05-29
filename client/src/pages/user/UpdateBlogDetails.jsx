@@ -5,6 +5,11 @@ import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import BackButton from "../../components/BackButton";
 import ErrorPage from "../admin/components/ErrorPage";
+import allCategories from "../../utils/allCategories";
+import Selectbox from "../../components/Selectbox";
+import Inputbox from "../../components/Inputbox";
+import Button from "../../components/Button";
+import Loader from "../../components/Loader";
 
 const updateBlogDetails = ({ to }) => {
   const { id } = useParams();
@@ -14,30 +19,22 @@ const updateBlogDetails = ({ to }) => {
   const [banner, setBanner] = useState("");
   const [category, setCategory] = useState("");
   const [privacy, setPrivacy] = useState("public");
-  const { updateBlog, fetchSingleBlog } = useBlogStore();
+  const [data, setData] = useState(false);
+  const { updateBlog, fetchSingleBlog, loading } = useBlogStore();
   const [newBanner, setNewBanner] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const allCategories = [
-    "Technology",
-    "Lifestyle",
-    "Health & Wellness",
-    "Personal Development",
-    "Finance",
-    "Fashion & Beauty",
-    "Food & Recipes",
-    "Travel",
-    "Business & Entrepreneurship",
-  ];
+  const [isFetching, setIsFetching] = useState(true);
+
+  const [error, setError] = useState({});
 
   useEffect(() => {
     fetchData();
   }, [id]);
 
   const fetchData = async () => {
-    setIsLoading(true);
     let res = await fetchSingleBlog(id);
-    setIsLoading(false);
+    setIsFetching(false);
     if (res) {
+      setData(true);
       setTitle(res.title);
       setDescription(res.description);
       setCategory(res.category);
@@ -47,11 +44,7 @@ const updateBlogDetails = ({ to }) => {
   };
 
   const handleUpdate = async () => {
-    if (!title || !category || !banner || !description) {
-      toast.error("Please fill all the fields");
-      return;
-    }
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append("title", title);
     formData.append("category", category);
     formData.append("description", description);
@@ -62,12 +55,18 @@ const updateBlogDetails = ({ to }) => {
       formData.append("file", newBanner);
     }
 
-    await updateBlog(id, formData);
+    let res = await updateBlog(id, formData);
+
+    if (res) {
+      setError(res);
+    } else {
+      setError({});
+    }
   };
 
   return (
     <>
-      {/* {title && isLoading ? ( */}
+      {data ? (
         <div className="  flex items-center justify-center p-4">
           <div className="max-w-full h-full w-full bg-white rounded-xl shadow-lg p-8">
             <BackButton to={to} />
@@ -75,7 +74,7 @@ const updateBlogDetails = ({ to }) => {
               Edit a Blog
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
               <label
                 htmlFor="banner"
                 className="overflow-hidden cursor-pointer"
@@ -104,45 +103,23 @@ const updateBlogDetails = ({ to }) => {
                   )}
                 </div>
               </label>
-              <div>
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Title
-                </label>
-                <input
-                  id="title"
-                  type="title"
-                  className="input"
-                  placeholder="Blog Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Privacy
-                </label>
-                <select
-                  className="input"
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Choose Category
-                  </option>
-                  {allCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Inputbox
+                label={"Title *"}
+                type={"text"}
+                placeholder={"Blog title"}
+                value={title}
+                setValue={setTitle}
+                error={error?.title}
+              />
+
+              <Selectbox
+                label={"Category"}
+                value={category}
+                setValue={setCategory}
+                options={allCategories}
+                error={error?.category}
+              />
+
               <div>
                 <label
                   htmlFor="title"
@@ -154,37 +131,37 @@ const updateBlogDetails = ({ to }) => {
                   value={description}
                   onTextChange={(e) => setDescription(e.htmlValue)}
                   style={{ height: "320px" }}
+                  className={`border-2 rounded-xl overflow-hidden ${
+                    error?.description ? " border-red-500" : " border-black"
+                  }`}
                 />
+                {<p className="text-red-500 mt-1">{error?.description}</p>}
               </div>
-              <div>
-                <label
-                  htmlFor="privacy"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Privacy
-                </label>
-                <select
-                  className="input"
-                  id="privacy"
-                  value={privacy}
-                  onChange={(e) => setPrivacy(e.target.value)}
-                >
-                  <option defaultChecked value={"public"}>
-                    Public
-                  </option>
-                  <option value={"private"}>Private</option>
-                </select>
-              </div>
-              <button
+
+              <Selectbox
+                label={"Privacy"}
+                value={privacy}
+                setValue={setPrivacy}
+                options={[
+                  { label: "Public", checked: true, value: "public" },
+                  { label: "Private", checked: false, value: "private" },
+                ]}
+                error={error?.privacy}
+              />
+              <Button
                 onClick={handleUpdate}
-                className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-              >
-                Update
-              </button>
+                loading={loading}
+                label={"Update"}
+                loadinglabel={"Updating"}
+              />
             </div>
           </div>
         </div>
-   
+      ) : isFetching ? (
+        <Loader />
+      ) : (
+        <ErrorPage message={"Blog Not Found"} to={to} label={"Back"} />
+      )}
     </>
   );
 };

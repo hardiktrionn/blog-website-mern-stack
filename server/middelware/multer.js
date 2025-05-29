@@ -5,7 +5,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + file.originalname;
+    const uniqueSuffix = Date.now() + "-" + path.parse(file.originalname).name;
     cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
@@ -14,10 +14,15 @@ const upload = multer({ storage: storage });
 const uploadMiddleware = (req, res, next) => {
   upload.single("file")(req, res, (err) => {
     if (err)
-      return res
-        .status(400)
-        .json({ message: "File upload failed", error: err.message });
+      return res.status(400).json({
+        success: 0,
+        message: [{ path: "server", msg: "File upload failed" }],
+      });
 
+    req.body.file = "";
+    if (req.file) {
+      req.body.file = req.file.originalname;
+    }
     next();
   });
 };

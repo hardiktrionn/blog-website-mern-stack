@@ -6,22 +6,28 @@ import useBlogStore from "../../store/useBlogStore";
 import getTimeAgo from "../../utils/getTimeAgo";
 import { FaLock } from "react-icons/fa6";
 import { useCookies } from "react-cookie";
+import { RxUpdate } from "react-icons/rx";
+import useDeletemodelStore from "../../store/useDeletemodelStore";
+import Model from "../../components/Model";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { blogs, deleteBlog } = useBlogStore();
   const [cookies, setCookies, removeCookies] = useCookies("token");
+  const { openDeleteModal, itemToDelete, isDeleteModalOpen, closeDeleteModal } =
+    useDeletemodelStore();
 
   const handleLogout = async () => {
     let res = await logout();
     if (res) {
       removeCookies("token");
-      navigate("/Login");
+     navigate("/login");
     }
   };
+
   return (
-    <div className="flex h-[90vh]">
+    <div className="flex h-[84vh]">
       <div className="w-[65%] px-10 py-10 overflow-y-auto">
         <div className="border-b-2 border-gray-300 py-5 mb-5">
           <h1 className="text-3xl font-bold">My Blogs</h1>
@@ -73,13 +79,13 @@ const Profile = () => {
                   <span className="font-semibold">{item?.likes}</span>
                 </div> */}
                 <Link
-                  to={`/updateBlog/${item?._id}`}
+                  to={`/update-blog/${item?._id}`}
                   className="bg-blue-400 px-5 py-1 rounded-full font-semibold cursor-pointer"
                 >
                   Edit
                 </Link>
                 <button
-                  onClick={() => deleteBlog(item?._id, "user")}
+                  onClick={() => openDeleteModal(item?._id)}
                   className="bg-red-400 px-5 py-1 rounded-full font-semibold cursor-pointer"
                 >
                   Delete
@@ -116,12 +122,24 @@ const Profile = () => {
             <RiLogoutBoxRLine />
             <span>Logout</span>
           </button>
-          <Link to={"/EditProfile"} className="btn-center space-x-1.5">
+          <Link to={"/edit-profile"} className="btn-center space-x-1.5">
             <MdModeEdit />
             <span>Edit Profile</span>
           </Link>
+          <Link to={"/change-password"} className="btn-center space-x-1.5">
+            <RxUpdate />
+            <span>Change Password</span>
+          </Link>
         </div>
       </div>
+      {isDeleteModalOpen && itemToDelete && (
+        <Model
+          onDelete={() => {
+            deleteBlog(itemToDelete, "user");
+            closeDeleteModal();
+          }}
+        />
+      )}
     </div>
   );
 };

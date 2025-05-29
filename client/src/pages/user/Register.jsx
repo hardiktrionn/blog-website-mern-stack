@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaRegUserCircle } from "react-icons/fa";
 import useAuthStore from "../../store/useAuthStore";
 import { useCookies } from "react-cookie";
+import Inputbox from "../../components/Inputbox";
+import Button from "../../components/Button";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -11,9 +13,11 @@ const Register = () => {
   const [name, setName] = useState("");
   const [picture, setPicture] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { registerUser } = useAuthStore();
   const [username, setUsername] = useState("");
   const [cookies, setCookies, removeCookies] = useCookies("token");
+  const [error, setError] = useState({});
 
   useEffect(() => {
     if (cookies?.token) {
@@ -22,6 +26,7 @@ const Register = () => {
   }, []);
 
   const handleRegister = async () => {
+    setIsLoading(true);
     let formData = new FormData();
 
     formData.append("name", name);
@@ -33,10 +38,11 @@ const Register = () => {
     formData.append("role", "user");
 
     let res = await registerUser(formData);
-
-    if (res) {
+    setIsLoading(false);
+    if (!res) {
       navigate("/");
     }
+    setError(res);
   };
 
   return (
@@ -46,7 +52,7 @@ const Register = () => {
           Register
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center justify-center mb-4">
             <label
               htmlFor="picture"
@@ -70,103 +76,73 @@ const Register = () => {
                 accept="image/*"
                 onChange={(e) => setPicture(e.target.files[0])}
               />
-              {picture ? picture.name : "Upload Profile Picture"}
+              {picture ? (
+                picture.name
+              ) : (
+                <p
+                  className={`${
+                    error?.file ? "text-red-500" : "text-gray-700"
+                  } mt-1`}
+                >
+                  {error.file || "Upload Profile Picture"}
+                </p>
+              )}
             </label>
-          </div>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="input"
-              placeholder="Your Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              User Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              className="input"
-              placeholder="Your UserName"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
+          <Inputbox
+            label={"Name *"}
+            type={"text"}
+            placeholder={"Your Name"}
+            value={name}
+            setValue={setName}
+            error={error?.name}
+          />
+          <Inputbox
+            label={"Username *"}
+            type={"text"}
+            placeholder={"Your Username"}
+            value={username}
+            setValue={setUsername}
+            error={error?.username}
+          />
+          <Inputbox
+            label={"Email *"}
+            type={"email"}
+            placeholder={"Your@gmail.com"}
+            value={email}
+            setValue={setEmail}
+            error={error?.email}
+          />
+          <Inputbox
+            label={"Password *"}
+            type={"password"}
+            placeholder={"••••••••"}
+            value={password}
+            setValue={setPassword}
+            error={error?.password}
+          />
+          <Inputbox
+            label={"Confirm Password *"}
+            type={"password"}
+            placeholder={"••••••••"}
+            value={confirmPassword}
+            setValue={setConfirmPassword}
+            error={error?.confirmpassword}
+          />
 
-          <button
+          <Button
             onClick={handleRegister}
-            className="w-full cursor-pointer bg-black hover:bg-black text-white font-medium py-2.5 rounded-lg transition-colors"
-          >
-            Register
-          </button>
+            loading={isLoading}
+            label={"Register"}
+            loadinglabel={"Loading"}
+          />
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Already have an account.{" "}
           <Link
-            to={"/Login"}
+            to={"/login"}
             className="text-black hover:text-black font-medium"
           >
             Login

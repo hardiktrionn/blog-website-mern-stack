@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const ErrorPage = ({ to, message, label }) => {
   return (
-    <section className="flex items-center h-[80vh] ">
+    <section className="absolute top-0 left-0 flex items-center justify-center w-screen h-screen ">
       <div className="container flex flex-col items-center ">
         <div className="flex flex-col gap-6 max-w-md text-center">
           <p className="text-2xl md:text-3xl dark:text-gray-300">{message}</p>

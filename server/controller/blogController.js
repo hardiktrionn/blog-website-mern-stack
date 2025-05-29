@@ -10,8 +10,7 @@ const createBlog = async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const firstError = errors.array()[0].msg;
-      return res.status(422).json({ success: 0, message: firstError });
+      return res.status(422).json({ success: 0, message: errors.array() });
     }
 
     const { title, description, category, privacy } = req.body;
@@ -38,9 +37,10 @@ const createBlog = async (req, res) => {
       blog: newBlog,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Error creating blog", error });
+    res.status(500).json({
+      success: false,
+      message: [{ path: "server", msg: "Error creating blog" }],
+    });
   } finally {
     if (!inserted) removeImage(banner);
   }
@@ -120,8 +120,7 @@ const updateBlog = async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      const firstError = errors.array()[0].msg;
-      return res.status(422).json({ success: 0, message: firstError });
+      return res.status(422).json({ success: 0, message: errors.array() });
     }
 
     const blogId = req.params.id;
@@ -129,7 +128,10 @@ const updateBlog = async (req, res) => {
     const findBlog = await BlogSchema.findById(blogId);
 
     if (!findBlog)
-      res.status(404).json({ success: false, message: "Blog not found" });
+      res.status(404).json({
+        success: false,
+        message: [{ path: "server", msg: "Blog not found" }],
+      });
 
     const { title, description, category, privacy } = req.body;
     const banner = req.file ? req.file.filename : null;
@@ -137,7 +139,12 @@ const updateBlog = async (req, res) => {
     if (findBlog.userId != req.user._id && req.user.role != "admin")
       res.status(403).json({
         success: false,
-        message: "You do not have permission to update this blog",
+        message: [
+          {
+            path: "server",
+            msg: "You do not have permission to update this blog",
+          },
+        ],
       });
 
     if (banner) {
@@ -156,9 +163,10 @@ const updateBlog = async (req, res) => {
       blog: findBlog,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Error updating blog", error });
+    res.status(500).json({
+      success: false,
+      message: [{ path: "server", msg: "Error updating blog" }],
+    });
   }
 };
 const deleteBlog = async (req, res) => {
@@ -180,8 +188,8 @@ const deleteBlog = async (req, res) => {
 
     await User.findByIdAndUpdate(req.user._id, { $pull: { blogs: blogId } });
 
-    if (blog.image) {
-      removeImage(blog.image);
+    if (blog.banner) {
+      removeImage(blog.banner);
     }
     res
       .status(200)

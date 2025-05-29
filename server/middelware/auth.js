@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User=require("../schema/userSchema")
 
 const isAuthenticated = (req, res, next) => {
   
@@ -20,5 +21,4 @@ const isAuthenticated = (req, res, next) => {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
-
 module.exports = { isAuthenticated };

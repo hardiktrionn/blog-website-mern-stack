@@ -17,13 +17,13 @@ const Sidebar = () => {
     let res = await logout();
     if (res) {
       removeCookies("token");
-      navigate("/Admin/Login");
+      navigate("/admin/login");
     }
   };
   return (
     <aside className="flex flex-col justify-between bg-gradient-to-br from-gray-800 to-gray-900 text-white inset-0 w-[20%] rounded-xl my-4 ml-4">
       <div className="border-b border-gray-50/50">
-        <Link to={"/Admin"} className="flex items-center gap-4 py-6 px-8">
+        <Link to={"/admin"} className="flex items-center gap-4 py-6 px-8">
           <h6 className="block antialiased tracking-normal font-sans text-base font-semibold leading-relaxed text-white">
             Blogs Dashboard
           </h6>
@@ -34,7 +34,7 @@ const Sidebar = () => {
         <ul className="mb-4 flex flex-col gap-x-1 gap-y-2">
           <li>
             <Link
-              to="/Admin"
+              to="/admin"
               className={`middle none font-sans font-bold center transition-all text-xs py-3 rounded-lg ${
                 currentPage == "dashboard" ? "bg-blue-500" : "bg-gray-500"
               } w-full flex items-center gap-4 px-4 capitalize`}
@@ -47,7 +47,7 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/Admin/users"
+              to="/admin/users"
               className={`middle none font-sans font-bold center transition-all text-xs py-3 rounded-lg ${
                 currentPage == "users" ? "bg-blue-500" : "bg-gray-500"
               } w-full flex items-center gap-4 px-4 capitalize`}
@@ -60,7 +60,7 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
-              to="/Admin/blogs"
+              to="/admin/blogs"
               className={`middle none font-sans font-bold center transition-all text-xs py-3 rounded-lg ${
                 currentPage == "blogs" ? "bg-blue-500" : "bg-gray-500"
               } w-full flex items-center gap-4 px-4 capitalize`}

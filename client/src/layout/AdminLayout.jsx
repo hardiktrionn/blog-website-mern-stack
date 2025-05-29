@@ -15,7 +15,7 @@ const AdminLayout = () => {
     if (!user && !isAuthenticated) {
       let res = await checkAuth();
       if (!res) {
-        navigate("/Admin/Login");
+        navigate("/admin/login");
         return;
       }
 

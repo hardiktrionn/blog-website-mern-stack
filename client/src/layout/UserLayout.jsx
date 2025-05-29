@@ -20,7 +20,7 @@ const userLayout = () => {
     if (!user && !isAuthenticated) {
       let res = await checkAuth();
       if (!res) {
-        navigate("/Login");
+        navigate("/login");
         removeCookies("token");
         return;
       }
