@@ -34,6 +34,7 @@ const CreateBlog = () => {
       setDescription("");
       setBanner("");
       setPrivacy("public");
+      setError({})
     } else {
       setError(res);
     }

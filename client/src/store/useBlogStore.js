@@ -12,16 +12,8 @@ const useBlogStore = create((set) => ({
   },
   isLoadingallBlogs: false,
   fetchAllBlogs: async () => {
-    set({ isLoadingallBlogs: true, allBlogs: [] });
-    try {
-      const res = await axiosInstance.get("/blog/all");
-      set({ allBlogs: res.data.blogs, isLoadingallBlogs: false });
-      return true;
-    } catch (error) {
-      set({ isLoadingallBlogs: false });
-
-      return false;
-    }
+    const res = await axiosInstance.get("/blog/all");
+    set({ allBlogs: res.data.blogs, isLoadingallBlogs: false });
   },
   fetchBlogs: async () => {
     set({ loading: true, error: null });

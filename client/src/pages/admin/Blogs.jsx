@@ -12,7 +12,7 @@ import SearchInput from "../../components/SearchInput";
 const Blogs = () => {
   const { setCurrentPage, currentPage } = useDashBoardStore();
   const { allBlogs, deleteBlog, fetchAllBlogs } = useBlogStore();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(allBlogs);
   const [search, setSearch] = useState("");
   const { openDeleteModal, itemToDelete, isDeleteModalOpen, closeDeleteModal } =
     useDeletemodelStore();
@@ -21,12 +21,13 @@ const Blogs = () => {
     if (currentPage !== "blogs") {
       setCurrentPage("blogs");
     }
-    const loadBlogs = async () => {
-      await fetchAllBlogs();
-      setData(allBlogs);
-    };
-    loadBlogs();
+
+    fetchAllBlogs();
   }, []);
+
+  useEffect(() => {
+    setData(allBlogs);
+  }, [allBlogs]);
 
   useEffect(() => {
     const time = setTimeout(() => {
@@ -39,14 +40,16 @@ const Blogs = () => {
   }, [search]);
 
   const filterData = () => {
-    let res = allBlogs.filter(
-      (a) =>
-        a?.title?.toLowerCase().includes(search.toLocaleLowerCase()) ||
-        a?.category?.toLowerCase().includes(search.toLocaleLowerCase()) ||
-        a?.username?.toLowerCase().includes(search.toLocaleLowerCase())
-    );
+    if (allBlogs.length) {
+      let res = allBlogs.filter(
+        (a) =>
+          a?.title?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+          a?.category?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+          a?.username?.toLowerCase().includes(search.toLocaleLowerCase())
+      );
 
-    setData(res);
+      setData(res);
+    }
   };
 
   return (

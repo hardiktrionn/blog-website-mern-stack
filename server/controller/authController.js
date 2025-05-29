@@ -264,7 +264,8 @@ const forgetPassword = async (req, res) => {
     // Email options
     await sendMail(
       email,
-      "You requested to reset your password",`
+      "You requested to reset your password",
+      `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #f9f9f9;">
   <h2 style="text-align: center; color: #333;">🔗 Password Reset</h2>
   <p style="font-size: 16px; color: #555;">Hello,</p>

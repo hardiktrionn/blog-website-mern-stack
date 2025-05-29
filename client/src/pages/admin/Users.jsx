@@ -24,12 +24,11 @@ const Users = () => {
     if (currentPage !== "users") {
       setCurrentPage("users");
     }
-    const loadBlogs = async () => {
-      await fetchUsers();
-      setData(users);
-    };
-    loadBlogs();
+    fetchUsers();
   }, []);
+  useEffect(() => {
+    setData(users);
+  }, [allBlogs]);
 
   useEffect(() => {
     const time = setTimeout(() => {
@@ -42,15 +41,17 @@ const Users = () => {
   }, [search]);
 
   const filterData = () => {
-    let res = users.filter(
-      (a) =>
-        a?.name?.toLowerCase().includes(search.toLocaleLowerCase()) ||
-        a?.email?.toLowerCase().includes(search.toLocaleLowerCase()) ||
-        a?.username?.toLowerCase().includes(search.toLocaleLowerCase()) ||
-        a?.blogs?.length == search
-    );
+    if (allBlogs.length) {
+      let res = users.filter(
+        (a) =>
+          a?.name?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+          a?.email?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+          a?.username?.toLowerCase().includes(search.toLocaleLowerCase()) ||
+          a?.blogs?.length == search
+      );
 
-    setData(res);
+      setData(res);
+    }
   };
 
   const deleteUser = async (id) => {
